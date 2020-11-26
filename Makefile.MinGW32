@@ -1,4 +1,4 @@
-FLAGS=CC=i586-mingw32msvc-g++ LD=i586-mingw32msvc-g++ LDFLAGS=-lws2_32 NAME=tcptunnel.exe
+FLAGS=CC=i586-mingw32msvc-g++ LD=i586-mingw32msvc-g++ LDFLAGS=-lws2_32,pthread NAME=tcptunnel.exe
 
 all:
 	$(MAKE) -C src $(FLAGS)

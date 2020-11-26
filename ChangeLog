@@ -1,3 +1,30 @@
+2020-11-25 tcptunnel-0.9
+
+	* Added mutithread support (usefull for windows)
+
+	* Increased default buffer size to 32K
+
+	* Changed logging format a bit
+
+	* Added log level control
+
+	* Added ability to set pipe idle timeout to auto close sessions
+
+	* Changed data dump a bit to be better parsed with regexp
+
+	* Changed behavior of --stay-alive option, it is now turns on concurency
+	this may be turned off by specifying later --concurency=none
+	if one ever need to use both --stay-alive --concurency=none
+
+	* Added more command line options (backward compatible way)
+	--log-level=LEVEL option
+	--concurency=MODEL option
+	--pipe-timeout=N option
+	--log-data=MODE option
+
+	* Added usage example
+
+
 2013-10-27 tcptunnel-0.8
 
 	* Added Mac OS X support.
