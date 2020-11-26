@@ -1,13 +1,16 @@
 # tcptunnel
 
-tcptunnel(mt) is a simple mutithread TCP port forwarder.
-The implemenation based on tcptunnel project from http://www.vakuumverpackt.de/tcptunnel/.
-This implemenation is command-line compatible with original implementation (provides superset of options) and may use pthreads library for concurency
+tcptunnel(mt) is a simple TCP port forwarder.
+The implementation based on tcptunnel project from http://www.vakuumverpackt.de/tcptunnel/.
+The goal of rewrite is to provide ability of multithread operation.
+This implementation is command-line compatible with original (provides superset of options).
+Also, some features added  (like pipe timeout) to support more stable operation on long runs.
 
 ## Help
 
 ```
 $ tcptunnel --help
+TCP/IP connection tunneling utility
 Usage: tcptunnel [options]
 
 Options:
@@ -19,12 +22,17 @@ Options:
   --remote-host=HOST   remote host to connect to
   --bind-address=IP    bind address to listen at
   --client-address=IP  only accept connections from this IP address
-  --buffer-size=BYTES  buffer size (default 128K)
-  --fork               fork-based concurrency (equvalent of --concurency=fork)
-  --log                turns on logging (equvalent to --loglevel=2)
-  --stay-alive         stay alive after first request
-  --loglevel=LEVEL     log level (0=off, 1=brief, 2=brief=data, 3=verbose)
-  --concurency=MODEL   concurency model: fork, threads, single (default threads)
+  --buffer-size=BYTES  buffer size [default 32K]
+  --fork               fork-based concurrency (same as --concurency=fork)
+  --log                turns on log    (same as --log-level=1 --log-data=bin)
+  --stay-alive         stay alive after first request   (turns on concurency)
+  --log-level=LEVEL    logging: 0=off,1=brief,2=full              [default 0]
+  --concurency=MODEL   concurency model: none,fork,threads     [default none]
+  --pipe-timeout=N     pipe data transfer timeout in sec (0=none) [default 0]
+  --log-data=MODE      dump pipe data mode: none,hex,bin       [default:none]
+
+Example:
+tcptunnel --remote-port=80 --local-port=9980 --remote-host=acme.com --stay-alive --log-level=2
 ```
 
 ## Building
