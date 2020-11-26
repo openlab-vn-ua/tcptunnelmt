@@ -15,7 +15,7 @@
 #define HELP_OPTION           'j'
 #define VERSION_OPTION        'k'
 #define LOG_LEVEL_OPTION      'l'
-#define CONCURENCY_OPTION     'm'
+#define CONCURRENCY_OPTION    'm'
 #define PIPE_TIMEOUT_OPTION   'n'
 #define LOG_DATA_MODE_OPTION  'o'
 
@@ -54,7 +54,7 @@ struct struct_options {
 	int         buffer_size;
 	int         log_level;
 	int         pipe_timeout;
-	int         concurency;
+	int         concurrency;
 	int         stay_alive;
 	int         log_data_mode;
 };
@@ -70,9 +70,9 @@ struct struct_options {
 #define LOG_LEVEL_BRIEF    1
 #define LOG_LEVEL_FULL     2
 
-#define CONCURENCY_NONE    0 // default
-#define CONCURENCY_THREADS 1
-#define CONCURENCY_FORK    2
+#define CONCURRENCY_NONE    0 // default
+#define CONCURRENCY_THREADS 1
+#define CONCURRENCY_FORK    2
 
 struct struct_rc {
 	struct hostent *remote_host;

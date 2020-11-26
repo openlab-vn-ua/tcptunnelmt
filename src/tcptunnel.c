@@ -64,7 +64,7 @@ static struct option long_options[] = {
 	{ "help",           no_argument,       NULL, HELP_OPTION },
 	{ "version",        no_argument,       NULL, VERSION_OPTION },
 	{ "log-level",      required_argument, NULL, LOG_LEVEL_OPTION },
-	{ "concurency",     required_argument, NULL, CONCURENCY_OPTION },
+	{ "concurrency",    required_argument, NULL, CONCURRENCY_OPTION },
 	{ "pipe-timeout",   required_argument, NULL, PIPE_TIMEOUT_OPTION },
 	{ "log-data",       required_argument, NULL, LOG_DATA_MODE_OPTION },
 	{ 0, 0, 0, 0 }
@@ -204,7 +204,7 @@ int set_options(int argc, char *argv[])
 
 			case FORK_OPTION:
 			{
-				options.concurency = CONCURENCY_FORK;
+				options.concurrency = CONCURRENCY_FORK;
 				break;
 			}
 
@@ -219,11 +219,11 @@ int set_options(int argc, char *argv[])
 			{
 				options.stay_alive = TRUE;
 				#if defined(FLAG_DISABLE_FORK)
-				options.concurency = CONCURENCY_THREADS;
+				options.concurrency = CONCURRENCY_THREADS;
 				#elif defined(__CYGWIN__)
-				options.concurency = CONCURENCY_THREADS; // preffer this on windows
+				options.concurrency = CONCURRENCY_THREADS; // preffer this on windows
 				#else
-				options.concurency = CONCURENCY_FORK;
+				options.concurrency = CONCURRENCY_FORK;
 				#endif
 				break;
 			}
@@ -234,35 +234,35 @@ int set_options(int argc, char *argv[])
 				break;
 			}
 
-			case CONCURENCY_OPTION:
+			case CONCURRENCY_OPTION:
 			{
 				if (optarg == NULL)
 				{
-					options.concurency = CONCURENCY_THREADS;
+					options.concurrency = CONCURRENCY_THREADS;
 				}
 				else if (strcmp(optarg, "fork") == 0)
 				{
 					#ifdef FLAG_DISABLE_FORK
-					options.concurency = CONCURENCY_THREADS;
+					options.concurrency = CONCURRENCY_THREADS;
 					#else
-					options.concurency = CONCURENCY_FORK;
+					options.concurrency = CONCURRENCY_FORK;
 					#endif
 				}
 				else if ((strcmp(optarg, "pthread") == 0) || (strcmp(optarg, "thread") == 0))
 				{
-					options.concurency = CONCURENCY_THREADS;
+					options.concurrency = CONCURRENCY_THREADS;
 				}
 				else if ((strcmp(optarg, "pthreads") == 0) || (strcmp(optarg, "threads") == 0))
 				{
-					options.concurency = CONCURENCY_THREADS;
+					options.concurrency = CONCURRENCY_THREADS;
 				}
 				else if ((strcmp(optarg, "none") == 0) || (strcmp(optarg, "single") == 0))
 				{
-					options.concurency = CONCURENCY_NONE;
+					options.concurrency = CONCURRENCY_NONE;
 				}
 				else
 				{
-					print_missing(name, "invalid '--concurency=' option.");
+					print_missing(name, "invalid '--concurrency=' option.");
 					return -1;
 				}
 				break;
@@ -348,7 +348,7 @@ int set_options(int argc, char *argv[])
 		return -1;
 	}
 
-	if (options.concurency != CONCURENCY_NONE)
+	if (options.concurrency != CONCURRENCY_NONE)
 	{
 		options.stay_alive = TRUE;
 	}
@@ -509,12 +509,12 @@ static void *handle_tunnel_mt(void *iclient_socket)
 
 void handle_client(int client_socket, int server_socket)
 {
-	if (options.concurency == CONCURENCY_NONE)
+	if (options.concurrency == CONCURRENCY_NONE)
 	{
 		handle_tunnel(client_socket);
 	}
 	#ifndef FLAG_DISABLE_FORK
-	else if (options.concurency == CONCURENCY_FORK)
+	else if (options.concurrency == CONCURRENCY_FORK)
 	{
 		if (fork() == 0)
 		{
@@ -813,13 +813,13 @@ Options:\n\
   --buffer-size=BYTES  buffer size [default " MACRO_STR(BUFFER_SIZE_DEFAULT_IN_KB) "K]\n"
 	#ifndef FLAG_DISABLE_FORK
 	"\
-  --fork               fork-based concurrency (same as --concurency=fork)\n"
+  --fork               fork-based concurrency    (same as --concurrency=fork)\n"
 	#endif
 	"\
   --log                turns on log    (same as --log-level=1 --log-data=bin)\n\
-  --stay-alive         stay alive after first request   (turns on concurency)\n\
+  --stay-alive         stay alive after first request  (turns on concurrency)\n\
   --log-level=LEVEL    logging: 0=off,1=brief,2=full              [default 0]\n\
-  --concurency=MODEL   concurency model: none,fork,threads     [default none]\n\
+  --concurrency=MODEL  concurrency model: none,fork,threads    [default none]\n\
   --pipe-timeout=N     pipe data transfer timeout in sec (0=none) [default 0]\n\
   --log-data=MODE      dump pipe data mode: none,hex,bin       [default:none]\n\
 \n");

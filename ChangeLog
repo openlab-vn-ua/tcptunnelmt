@@ -1,6 +1,6 @@
 2020-11-25 tcptunnel-0.9
 
-	* Added mutithread support (usefull for windows)
+	* Added mutithread support (useful for Windows)
 
 	* Increased default buffer size to 32K
 
@@ -12,13 +12,13 @@
 
 	* Changed data dump a bit to be better parsed with regexp
 
-	* Changed behavior of --stay-alive option, it is now turns on concurency
-	this may be turned off by specifying later --concurency=none
-	if one ever need to use both --stay-alive --concurency=none
+	* Changed behavior of --stay-alive option, it is now turns on concurrency
+	this may be turned off by specifying later --concurrency=none
+	if one ever need to use both --stay-alive --concurrency=none
 
 	* Added more command line options (backward compatible way)
 	--log-level=LEVEL option
-	--concurency=MODEL option
+	--concurrency=MODEL option
 	--pipe-timeout=N option
 	--log-data=MODE option
 

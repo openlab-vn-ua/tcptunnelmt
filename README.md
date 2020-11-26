@@ -23,11 +23,11 @@ Options:
   --bind-address=IP    bind address to listen at
   --client-address=IP  only accept connections from this IP address
   --buffer-size=BYTES  buffer size [default 32K]
-  --fork               fork-based concurrency (same as --concurency=fork)
+  --fork               fork-based concurrency (same as --concurrency=fork)
   --log                turns on log    (same as --log-level=1 --log-data=bin)
-  --stay-alive         stay alive after first request   (turns on concurency)
+  --stay-alive         stay alive after first request  (turns on concurrency)
   --log-level=LEVEL    logging: 0=off,1=brief,2=full              [default 0]
-  --concurency=MODEL   concurency model: none,fork,threads     [default none]
+  --concurrency=MODEL  concurrency model: none,fork,threads    [default none]
   --pipe-timeout=N     pipe data transfer timeout in sec (0=none) [default 0]
   --log-data=MODE      dump pipe data mode: none,hex,bin       [default:none]
 
