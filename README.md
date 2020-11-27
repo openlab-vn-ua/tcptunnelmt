@@ -37,7 +37,7 @@ tcptunnel --remote-port=80 --local-port=9980 --remote-host=acme.com --stay-alive
 
 ## Building
 
-### For Unix
+### For Unix/Linux
 
 ```
 $ git clone https://github.com/openlab-vn-ua/tcptunnelm.git
@@ -86,13 +86,45 @@ $ git clone git://github.com/openlab-vn-ua/tcptunnelmt.git
 $ cd tcptunnelmt
 $ ./configure
 $ make
+
 $ ./tcptunnel --version
 $ ./tcptunnel --help
 $ file tcptunnel.exe
 tcptunnel.exe: PE32 executable (console) Intel 80386, for MS Windows
 ```
 
-### For Windows (MinGW32)
+### For Windows (MinGW32+MSYS)
+
+You will need MinGW32 to compile tcptunnel on Windows. 
+Please see http://www.mingw.org/ for more details. 
+You need to install at least following components:
+
+* mingw32-developer-toolkit-bin AKA An MSYS intallation for MinGW Developers (meta) // tested ver20130723
+* msys-base-bin AKA Basic MSYS Installation (meta) // tested ver20130722
+* mingw32-gcc-g++-bin AKA GNU C++ Compiller // tested ver 9.2.0-2
+* mingw32-pthreads-w32-dev AKA POSIX threading library for Win32 // tested ver 2.10-pre-20160821-1
+
+Launch msys shell (usually, via something alike C:\MinGW\msys\1.0\msys.bat), then run shell commands. 
+
+Notes:
+After fresh install of MinGW, folder `/usr/local/bin` may be missing, 
+so you may need to create it via `mkdir -p /usr/local/bin`, 
+unless you use afletrnaive install location via `--prefix` option for `configure`.
+
+```
+$ uname -a
+MINGW32_NT-6.1 computer 1.0.19(0.48/3/2) 2016-07-13 17:45 i686 Msys
+$ [ -d /usr/local/bin ] || mkdir -p /usr/local/bin
+
+$ git clone https://github.com/openlab-vn-ua/tcptunnelmt.git
+$ cd tcptunnelmt
+$ ./configure
+$ make -f Makefile
+$ file tcptunnel.exe
+tcptunnel.exe: PE32 executable (console) Intel 80386, for MS Windows
+```
+
+### Linux to cross compile for Windows (MinGW32)
 
 You will need MinGW32 to cross-compile tcptunnel. 
 Please see http://www.mingw.org/ for more details. 
@@ -112,9 +144,14 @@ $ file tcptunnel.exe
 tcptunnel.exe: PE32 executable (console) Intel 80386, for MS Windows
 ```
 
-Note:
+NOTE: This need to be tested, but it should work.
+
+## General Notes
+
 The MinGW32-based version does not support the fork-based concurrent client handling.
-If you need this feature under Windows, then you should use the Cygwin-based version.
+It supports threads concurency mode only (this seems more effective under Windows).
+If you specify --fork options, MinGW32 version will fallback to threads concurency mode.
+If (for smore reason) you need explicit fork-based concurency feature under Windows, then you should use the Cygwin-based version.
 
 ## ChangeLog
 
