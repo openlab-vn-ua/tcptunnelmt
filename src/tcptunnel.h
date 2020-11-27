@@ -56,7 +56,7 @@ struct struct_options {
 	int         pipe_timeout;
 	int         concurrency;
 	int         stay_alive;
-	int         log_data_mode;
+	int         log_data;
 };
 
 #define LOG_DATA_NONE 0

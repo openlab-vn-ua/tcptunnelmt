@@ -104,9 +104,47 @@ int main(int argc, char *argv[])
 
 	timestamp_buffer_t tsb;
 
+	if ((options.log_level >= LOG_LEVEL_FULL))
+	{
+		printf("> %s tcptunnel: init: buffer-size=%d\n", get_current_timestamp(&tsb), options.buffer_size);
+	}
+
+	if ((options.log_level >= LOG_LEVEL_FULL) && (options.pipe_timeout > 0))
+	{
+		printf("> %s tcptunnel: init: pipe-timeout=%d (sec)\n", get_current_timestamp(&tsb), options.pipe_timeout);
+	}
+
+	if ((options.log_level >= LOG_LEVEL_FULL))
+	{
+		const char *concurrency_text = "";
+		if      (options.concurrency == CONCURRENCY_NONE)    { concurrency_text = "none";    }
+		else if (options.concurrency == CONCURRENCY_FORK)    { concurrency_text = "fork";    }
+		else if (options.concurrency == CONCURRENCY_THREADS) { concurrency_text = "threads"; }
+		printf("> %s tcptunnel: init: concurrency=%s\n", get_current_timestamp(&tsb), concurrency_text);
+	}
+
+	if ((options.log_level >= LOG_LEVEL_FULL) && (options.log_data != LOG_DATA_NONE))
+	{
+		const char *log_data_text = "";
+		if      (options.log_data == LOG_DATA_BIN) { log_data_text = "bin"; }
+		else if (options.log_data == LOG_DATA_HEX) { log_data_text = "hex"; }
+		printf("> %s tcptunnel: init: log-data=%s\n", get_current_timestamp(&tsb), log_data_text);
+	}
+
+	if ((options.log_level >= LOG_LEVEL_FULL) && (options.concurrency == CONCURRENCY_NONE))
+	{
+		const char* stay_alive_text = (options.stay_alive ? "[active, will run continuously]" : "[not active, will end after 1 request]");
+		printf("> %s tcptunnel: init: stay-alive %s\n", get_current_timestamp(&tsb), stay_alive_text);
+	}
+
+	if ((options.log_level >= LOG_LEVEL_FULL) && (options.client_address != NULL))
+	{
+		printf("> %s tcptunnel: init: allowed only client-address=[%s]\n", get_current_timestamp(&tsb), options.client_address);
+	}
+
 	if (options.log_level >= LOG_LEVEL_FULL)
 	{
-		printf("> %s tcptunnel: resolving remote host [%s]\n", get_current_timestamp(&tsb), options.remote_host);
+		printf("> %s tcptunnel: init: resolving remote-host=[%s]\n", get_current_timestamp(&tsb), options.remote_host);
 	}
 
 	rc.remote_host = gethostbyname(options.remote_host);
@@ -211,7 +249,7 @@ int set_options(int argc, char *argv[])
 			case LOG_OPTION:
 			{
 				options.log_level = LOG_LEVEL_FULL;
-				options.log_data_mode = LOG_DATA_BIN;
+				options.log_data = LOG_DATA_BIN;
 				break;
 			}
 
@@ -278,19 +316,19 @@ int set_options(int argc, char *argv[])
 			{
 				if (optarg == NULL)
 				{
-					options.log_data_mode = LOG_DATA_BIN;
+					options.log_data = LOG_DATA_BIN;
 				}
 				else if (strcmp(optarg, "hex") == 0)
 				{
-					options.log_data_mode = LOG_DATA_HEX;
+					options.log_data = LOG_DATA_HEX;
 				}
 				else if (strcmp(optarg, "bin") == 0)
 				{
-					options.log_data_mode = LOG_DATA_BIN;
+					options.log_data = LOG_DATA_BIN;
 				}
 				else if (strcmp(optarg, "none") == 0)
 				{
-					options.log_data_mode = LOG_DATA_NONE;
+					options.log_data = LOG_DATA_NONE;
 				}
 				else
 				{
@@ -481,14 +519,18 @@ int wait_for_clients(int server_socket)
 	return client_socket;
 }
 
+// pass int parameter as void * we threat void * as int here // usefull to pthread_create
+// (it is not fair play, but works, as intptr_t at least size of int in all imaginable cases)
+#define INT_AS_VOID_PTR(i) ((void *)((intptr_t)(i)))
+#define VOID_PTR_AS_INT(p) ((int)((intptr_t)(p)))
+
 static void *handle_tunnel_mt(void *iclient_socket)
 {
 	static long thread_num = 0;
 
-	// we threat void * as int here (it is not fair play, but works)
 	timestamp_buffer_t tsb;
 
-	int client_socket = (int)iclient_socket;
+	int client_socket = VOID_PTR_AS_INT(iclient_socket);
 
 	long thread_id = ++thread_num;
 
@@ -518,18 +560,39 @@ void handle_client(int client_socket, int server_socket)
 	{
 		if (fork() == 0)
 		{
+			// child
+			timestamp_buffer_t tsb;
+
 			close(server_socket);
+
+			long proccess_id = getpid();
+
+			if (options.log_level >= LOG_LEVEL_FULL)
+			{
+				printf("> %s tcptunnel: [%d+?] proccess %ld started\n", get_current_timestamp(&tsb), client_socket, (long)proccess_id);
+			}
+
 			handle_tunnel(client_socket);
+
+			if (options.log_level >= LOG_LEVEL_FULL)
+			{
+				printf("> %s tcptunnel: [%d+?] proccess %ld ended\n", get_current_timestamp(&tsb), client_socket, (long)proccess_id);
+			}
+
 			exit(0);
 		}
-		close(client_socket);
+		else
+		{
+			// parent
+			close(client_socket);
+		}
 	}
 	#endif
 	else
 	{
 		// mutithread
 		pthread_t proc_thread;
-		if (pthread_create(&proc_thread, NULL, &handle_tunnel_mt, (void*)client_socket))
+		if (pthread_create(&proc_thread, NULL, &handle_tunnel_mt, INT_AS_VOID_PTR(client_socket)))
 		{
 			perror("handle_client: pthread_create");
 			return;
@@ -655,7 +718,7 @@ int use_tunnel(int client_socket, int remote_socket)
 		}
 		else if (select_result == 0)
 		{
-			printf("> %s tcptunnel: [%d+%d] timeout of %d sec elapsed\n", get_current_timestamp(&tsb), client_socket, remote_socket, options.pipe_timeout);
+			printf("> %s tcptunnel: [%d+%d] pipe timeout of %d sec elapsed\n", get_current_timestamp(&tsb), client_socket, remote_socket, options.pipe_timeout);
 			result = -1;
 			break;
 		}
@@ -682,10 +745,10 @@ int use_tunnel(int client_socket, int remote_socket)
 				break;
 			}
 
-			if (options.log_data_mode > LOG_DATA_NONE)
+			if (options.log_data > LOG_DATA_NONE)
 			{
-				printf("> %s tcptunnel: [%d+%d] received %d bytes from client [dump:start]\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
-				if (options.log_data_mode == LOG_DATA_HEX)
+				printf("> %s tcptunnel: [%d+%d] pipe received %d bytes from client [dump:start]\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
+				if (options.log_data == LOG_DATA_HEX)
 				{
 					print_dump_hex(buffer, count);
 				}
@@ -695,11 +758,11 @@ int use_tunnel(int client_socket, int remote_socket)
 					//fflush(stdout);
 				}
 				printf("\n");
-				printf("> %s tcptunnel: [%d+%d] received %d bytes from client [dump:end]:\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
+				printf("> %s tcptunnel: [%d+%d] pipe received %d bytes from client [dump:end]:\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
 			}
 			else if (options.log_level >= LOG_LEVEL_FULL)
 			{
-				printf("> %s tcptunnel: [%d+%d] received %d bytes from client\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
+				printf("> %s tcptunnel: [%d+%d] pipe received %d bytes from client\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
 			}
 
 			if (send(remote_socket, buffer, count, 0) <= 0)
@@ -731,10 +794,10 @@ int use_tunnel(int client_socket, int remote_socket)
 				break;
 			}
 
-			if (options.log_data_mode > LOG_DATA_NONE)
+			if (options.log_data > LOG_DATA_NONE)
 			{
-				printf("> %s tcptunnel: [%d+%d] received %d bytes from remote [dump:start]\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
-				if (options.log_data_mode == LOG_DATA_HEX)
+				printf("> %s tcptunnel: [%d+%d] pipe received %d bytes from remote [dump:start]\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
+				if (options.log_data == LOG_DATA_HEX)
 				{
 					print_dump_hex(buffer, count);
 				}
@@ -744,11 +807,11 @@ int use_tunnel(int client_socket, int remote_socket)
 					//fflush(stdout);
 				}
 				printf("\n");
-				printf("> %s tcptunnel: [%d+%d] received %d bytes from remote [dump:end]\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
+				printf("> %s tcptunnel: [%d+%d] pipe received %d bytes from remote [dump:end]\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
 			}
 			else if (options.log_level >= LOG_LEVEL_FULL)
 			{
-				printf("> %s tcptunnel: [%d+%d] received %d bytes from remote\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
+				printf("> %s tcptunnel: [%d+%d] pipe received %d bytes from remote\n", get_current_timestamp(&tsb), client_socket, remote_socket, count);
 			}
 
 			if (send(client_socket, buffer, count, 0) <= 0)
