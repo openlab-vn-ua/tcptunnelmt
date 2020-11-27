@@ -29,6 +29,13 @@ if [ ! -d "$PREFIX" ]; then
 	exit 1
 fi
 
+# additional items to replace tin Makefile.in
+CFLAGS=''
+CXXFLAGS=''
+CPPFLAGS=''
+LDFLAGS='-lpthread'
+NAME='tcptunnel'
+
 OS=`uname -s 2> /dev/null`
 case "$OS" in
 	FreeBSD)
@@ -41,16 +48,30 @@ case "$OS" in
 	;;
 
 	SunOS)
-		LDFLAGS='-lxnet'
+		LDFLAGS="${LDFLAGS} -lxnet"
+	;;
+	MINGW32_NT*)
+		CPPLAGS='-D_PTW32_STATIC_LIB'
+		LDFLAGS='-static -lws2_32 -lpthread'
+		NAME='tcptunnel.exe'
 	;;
 esac
 echo "checking host system type... $OS"
 
+# escape forware slash, so it will not confuse next sed replace pattern
 PREFIX=`echo $PREFIX | sed 's#\/#\\\/#g'`
+CFLAGS=`echo $CFLAGS | sed 's#\/#\\\/#g'`
+CXXFLAGS=`echo $CXXFLAGS | sed 's#\/#\\\/#g'`
+CPPFLAGS=`echo $CPPFLAGS | sed 's#\/#\\\/#g'`
 LDFLAGS=`echo $LDFLAGS | sed 's#\/#\\\/#g'`
+NAME=`echo $NAME | sed 's#\/#\\\/#g'`
 
 sed -n -e "s/@PREFIX@/$PREFIX/g;" \
+       -e "s/@CFLAGS@/$CFLAGS/g;" \
+       -e "s/@CXXFLAGS@/$CXXFLAGS/g;" \
+       -e "s/@CPPFLAGS@/$CPPFLAGS/g;" \
        -e "s/@LDFLAGS@/$LDFLAGS/g;" \
+       -e "s/@NAME@/$NAME/g;" \
        -e "w ./src/Makefile" \
 ./src/Makefile.in
 

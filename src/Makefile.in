@@ -1,23 +1,23 @@
-NAME     = tcptunnel
+NAME     = @NAME@
 
 CC       = gcc
 LD       = gcc
-CFLAGS   = -Wall -I./
-CXXFLAGS = 
-CPPFLAGS = 
+CFLAGS   = -Wall -I./ @CFLAGS@
+CXXFLAGS = -Wall -I./ @CXXFLAGS@
+CPPFLAGS = @CPPFLAGS@
 LDFLAGS  = @LDFLAGS@
 OBJS     = tcptunnel.o
 
-BINDIR = @PREFIX@
-INSTALL = install
-STRIP = strip
-RM = /bin/rm -f
-CP = cp
+BINDIR   = @PREFIX@
+INSTALL  = install
+STRIP    = strip
+RM       = /bin/rm -f
+CP       = cp
 
 all: tcptunnel
 
 %.o: %.c
-	$(CC) $(CFLAGS) $(CXXFLAGS) $(CPPFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) $(CPPFLAGS) -c -o $@ $<
 
 tcptunnel: $(OBJS)
 	@echo $(CC)
