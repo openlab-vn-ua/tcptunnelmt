@@ -697,8 +697,6 @@ int use_tunnel(int client_socket, int remote_socket)
 		FD_SET(client_socket, &io);
 		FD_SET(remote_socket, &io);
 
-		memset(&buffer, 0, sizeof(buffer));
-
 		struct timeval timeout;
 		memset(&timeout, 0, sizeof(timeout));
 		timeout.tv_sec = options.pipe_timeout;

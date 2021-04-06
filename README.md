@@ -6,6 +6,8 @@ The goal of rewrite is to provide ability of multithread operation.
 This implementation is command-line compatible with original (provides superset of options).
 Also, some features added  (like pipe timeout) to support more stable operation on long runs.
 
+[![Build status](https://github.com/openlab-vn-ua/tcptunnelm/workflows/build/badge.svg)](https://github.com/openlab-vn-ua/tcptunnelm/actions?query=workflow%3Abuild)
+
 ## Help
 
 ```
