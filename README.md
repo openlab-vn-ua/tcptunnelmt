@@ -1,6 +1,6 @@
 # tcptunnel
 
-tcptunnel(mt) is a simple TCP port forwarder.
+tcptunnel(mt) is a simple mutithread TCP port forwarder.
 The implementation based on tcptunnel project from http://www.vakuumverpackt.de/tcptunnel/.
 The goal of rewrite is to provide ability of multithread operation.
 This implementation is command-line compatible with original (provides superset of options).
